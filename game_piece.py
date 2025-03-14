@@ -4,7 +4,6 @@ more work done by cam
 from placeble import Placeble
 from player_colors import PlayerColors
 from position import Position
-from typing import List
 
 class GamePiece(Placeble):
     def __str__(self) -> str:
@@ -32,7 +31,15 @@ class GamePiece(Placeble):
                     continue
         return has_liberty # true = piece isn't surrounded, false = piece is surrounded
 
+    def __eq__(self, other) -> bool: # REDIFINING THE QUEALS SO PRAIRIE LEARN WORKS
+        if not isinstance(other, GamePiece):
+            return False
+        return self.color == other.color
+
     def equals(self, other) -> bool:
+        return self == other
+
+    """def equals(self, other) -> bool: # my old equals if you care
         if not isinstance(other, GamePiece): # if other is not a GamePiece then false
             return False
-        return self.color == other.color # if both pieces are the same color return true, else return false
+        return self.color == other.color # if both pieces are the same color return true, else return false"""

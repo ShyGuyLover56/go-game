@@ -4,7 +4,6 @@ this shit was done by the legendary cam, any questions pls text me or smth idk, 
 from abc import ABC, abstractmethod # abstract method
 from player_colors import PlayerColors # starter file
 from position import Position # starter file
-# from typing import List, Optional # helps is_valid_placement
 
 
 class Placeble(ABC):
