@@ -10,7 +10,7 @@ class GamePiece(Placeble):
     def __str__(self) -> str:
         return f'GamePiece({self.color.name})' # GamePiece(BLACK) or GamePiece(WHITE)
 
-    def is_valid_placement(self, pos: Position, board: List[List["GamePiece" | None]]) -> bool:
+    def is_valid_placement(self, pos: Position, board) -> bool:
         if not super().is_valid_placement(pos, board): # if the placement on the board is not valid from placeble.py
             return False
 
