@@ -5,7 +5,7 @@ from player_colors import PlayerColors
 from game_piece import GamePiece
 from game_player import GamePlayer
 
-class GoModel():
+class GoModel:
     def __init__(self, rows: int = 6, cols: int = 6):
         if rows not in [6, 9, 11, 13, 19] or cols not in [6, 9, 11, 13, 19]:
             raise ValueError("Invalid board size: board size must be 6x6, 9x9, 11x11, 13x13, or 19x19")
@@ -13,9 +13,11 @@ class GoModel():
         self.__nrows = rows #number of rows on the board
         self.__ncols = cols #number of columns on the board
         self.__board: List[List[Optional[GamePiece]]] = [[None for i in range(cols)] for j in range(rows)] #initializes the board
-        self.__current_player = GamePlayer(PlayerColors.BLACK) #Black starts first, per Go rules
+        self.__current_player: GamePlayer = GamePlayer(PlayerColors.BLACK) #Black starts first, per Go rules
         self.__message = "" #message to be displayed to the players
         self.__history = [] #Stores board save-states for undo function
+        self.__black_captures = 0
+        self.__white_captures = 0
 
     @property
     def nrows(self) -> int:
@@ -47,7 +49,14 @@ class GoModel():
         raise ValueError("Out of bounds!")
 
     def set_piece(self, pos: Position, piece: Optional[GamePiece] = None):
-        pass
+        if not self.is_valid_placement(pos, piece): # Checks if set_piece is allowed
+            self.__message= "Invalid Placement!"
+            return
+
+        self.__history.append([row[:] for row in self.__board]) # Makes a copy that 'undo' can use
+        self.__board[pos.row][pos.col] = piece
+        self.capture() # Checks to see if a capture is possible from the newly placed piece
+        self.set_next_player() # Changes the turn after a piece is placed
 
     def set_next_player(self):
         if self.__current_player.player_color == PlayerColors.BLACK:
@@ -84,7 +93,8 @@ class GoModel():
                 group.add(current)
                 for r, c in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     new_pos = Position(current.row + r, current.col + c)
-                    if self.__nrows > new_pos.row >= 0 and self.__ncols > new_pos.col >= 0:
+                    # if self.__nrows > new_pos.row >= 0 and self.__ncols > new_pos.col >= 0:
+                    if 0 <= new_pos.row < self.__nrows and 0 <= new_pos.col < self.__ncols:
                         neighbor = self.piece_at(new_pos)
                         if neighbor is None:
                             liberties.add(new_pos) #Empty space adjacent to group
@@ -110,12 +120,11 @@ class GoModel():
         black_score = sum(row.count(GamePiece(PlayerColors.BLACK)) for row in self.__board)
         white_score = sum(row.count(GamePiece(PlayerColors.WHITE)) for row in self.__board)
 
-        black_captures = 0
-        white_captures = 0
+        # Instead of finding captures here, I figured we should initialize it sooner so that there's less backtracking to do :)
+        black_score += self.__black_captures
+        white_score += self.__white_captures + 6.5 #Komi bonus
 
-        white_score += 6.5 #Komi bonus
-
-        return [black_score + black_captures, white_score + white_captures]
+        return [black_score, white_score]
 
     def undo(self):
         if not self.__history:
