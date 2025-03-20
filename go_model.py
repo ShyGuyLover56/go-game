@@ -3,6 +3,7 @@ from position import Position
 from player_colors import PlayerColors
 from game_piece import GamePiece
 from game_player import GamePlayer
+import copy
 
 class GoModel: # starting over
 
@@ -81,19 +82,23 @@ class GoModel: # starting over
         self.set_next_player()
 
     def set_next_player(self) -> None:
-        next_color = self.__current_player.player_color.opponent() # opponent comes from player_colors.py file
-        self.__current_player = GamePlayer(next_color) # switches turn to next player
+        """next_color = self.__current_player.player_color.opponent() # opponent comes from player_colors.py file
+        self.__current_player = GamePlayer(next_color) # switches turn to next player"""
+        self.__current_player = (
+            self.__black_player if self.__current_player == self.__white_player else self.__white_player
+        )
 
     def pass_turn(self) -> None:
         self.__current_player.skip_count += 1
 
         if self.__current_player.skip_count >= 2: # if both players pass the game ends
             self.__message = "game over"
+            return
 
         self.set_next_player() # switches turn to next player
 
     def is_game_over(self) -> bool:
-        return self.__current_player.skip_count >= 2 # returns as true if both players passed, aka game over
+        return self.__current_player.skip_count >= 2 and self.__white_player.skip_count >= 2 # returns as true if both players passed, aka game over
 
     def is_valid_placement(self, pos: Position, piece: GamePiece) -> bool: # checks if given position is valid before placing the actual piece
         if not (0 <= pos.row < self.__nrows and 0 <= pos.col < self.__ncols): # checks out of bounds
@@ -149,7 +154,7 @@ class GoModel: # starting over
         for row in range(self.__nrows):
             for col in range(self.__ncols): # loops through every position on the board
                 piece = self.__board[row][col]
-                if piece and piece.color == opponent_color:# if a piece is found and is opponent color it will be checked for liberties
+                if piece and piece.color == opponent_color: # if a piece is found and is opponent color it will be checked for liberties
                     if not self.__has_liberty(Position(row, col), set()): # calls __has_liberty to check if the opponents piece has at least 1 empty adjacent space, if no liberties are found false is returned and the position is added to captured_positions
                         captured_positions.append(Position(row, col))
 
@@ -190,10 +195,7 @@ class GoModel: # starting over
                             white_score += len(territory_positions)
 
         # returns final score as a dictionary
-        return {
-            "BLACK": black_score,
-            "WHITE": white_score
-        }
+        return [black_score + 6.5, white_score]
 
     def __flood_fill_territory(self, pos: Position, territory_positions: set, surrounding_colors: set, visited: set) -> None: # helper method for calculate score
 
@@ -227,11 +229,10 @@ class GoModel: # starting over
 
         # undoes the game
         last_state = self.__move_history.pop()
-        self.__board = last_state["board"]
+        self.__board = copy.deepcopy(last_state["board"])
         self.__current_player = last_state["player"]
         self.__message = "undo"
 
-        # capture and skip count for when i do it
         self.__current_player.capture_count = last_state["captures"][self.__current_player.player_color]
         self.__current_player.skip_count = last_state["skips"][self.__current_player.player_color]
 
