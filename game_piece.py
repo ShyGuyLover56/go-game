@@ -1,15 +1,38 @@
-"""
-more work done by cam
-"""
+
+# more work done by cam
+
 from placeble import Placeble
 from player_colors import PlayerColors
 from position import Position
 
 class GamePiece(Placeble):
+    """
+        A class representing a game piece in the game, inheriting from Placeble.
+
+        The GamePiece represents a piece that can be placed on the game board, and has methods to determine valid placement and equality comparison.
+        """
     def __str__(self) -> str:
+        """
+        Returns a string representation of the GamePiece.
+
+        Returns:
+            str: A string that represents the GamePiece, showing its color.
+        """
         return f'GamePiece({self.color.name})' # GamePiece(BLACK) or GamePiece(WHITE)
 
     def is_valid_placement(self, pos: Position, board) -> bool:
+        """
+        Checks if placing the game piece at the specified position is valid.
+
+        This method first checks basic placement validity using the parent class method, then checks for the surrounding environment to ensure the piece is not fully surrounded by opponent pieces.
+
+        Args:
+            pos (Position): The position to check for validity.
+            board (list[list[Optional[Placeble]]]): The game board represented as a 2D list where each element is either None or a placeable object.
+
+        Returns:
+            bool: True if the placement is valid, False otherwise.
+        """
         if not super().is_valid_placement(pos, board): # if the placement on the board is not valid from placeble.py
             return False
 
@@ -32,11 +55,29 @@ class GamePiece(Placeble):
         return has_liberty # true = piece isn't surrounded, false = piece is surrounded
 
     def __eq__(self, other) -> bool: # REDIFINING THE QUEALS SO PRAIRIE LEARN WORKS
+        """
+        Compares this GamePiece with another GamePiece for equality.
+
+        Args:
+            other (object): The object to compare against.
+
+        Returns:
+            bool: True if both GamePieces have the same color, False otherwise.
+        """
         if not isinstance(other, GamePiece):
             return False
         return self.color == other.color
 
     def equals(self, other) -> bool:
+        """
+        Checks if this GamePiece is equal to another GamePiece.
+
+        Args:
+            other (object): The object to compare against.
+
+        Returns:
+            bool: True if both GamePieces are equal, False otherwise.
+        """
         return self == other
 
     """def equals(self, other) -> bool: # my old equals if you care
